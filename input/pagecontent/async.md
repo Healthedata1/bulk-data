@@ -1,10 +1,12 @@
 {% assign bulk_server_role = "server" %}
 {% assign bulk_client_role = "client" %}
+{% assign bulk_request_name = "an asynchronous bulk request" %}
+{% assign bulk_file_kind = "files" %}
 The FHIR Asynchronous Bulk Interaction Pattern, described below, is a FHIR request and response flow that servers can implement for any [Operation](https://hl7.org/fhir/operations.html) or [Defined Interaction](https://hl7.org/fhir/http.html) that needs to return a large dataset. This pattern is described in the FHIR R4 and FHIR R5 versions of the [FHIR specification](https://hl7.org/fhir), and has been moved into this Implementation Guide going forward.
 
 The [Bulk Export Operation](export.html) and the [Bulk Submit Status Operation](submit.html#bulk-submit-status-request-flow) in this IG build on this pattern.
 
-Use cases that return small amounts of data but may take a lot of time to process may prefer to use the related [Asynchronous Interaction Request Pattern](https://hl7.org/fhir/async-bundle.html).
+Use cases that return small amounts of data but may take a lot of time to process may prefer to use the related [Asynchronous Interaction Request Pattern](https://hl7.org/fhir/R5/async-bundle.html).
 
 ### FHIR Asynchronous Bulk Interaction Flow
 
@@ -27,7 +29,7 @@ Servers SHALL support the HTTP methods, URLs, headers, and other parameters that
 
   Specifies whether the response is immediate or asynchronous. Setting this to <a href="https://datatracker.ietf.org/doc/html/rfc7240#section-4.1"><code>respond-async</code></a> triggers this asynchronous bulk pattern, though operations that can only be invoked asynchronously MAY default to this behavior or MAY return an error when this header is not provided.
 
-  A client MAY also provide a second Prefer header value of `separate-export-status`, so the combined Prefer header for the kick-off request is `Prefer: respond-async,separate-export-status`. If this header value is included by a client and is supported by a server, the server SHALL return the header `Preference-Applied` with values of `respond-async` and `separate-export-status` in its response. These may be provided as comma-delimited values or the header may be repeated for each value.
+  A client MAY also provide a second Prefer header value of `separate-export-status`, so the combined Prefer header for the kick-off request is `Prefer: respond-async,separate-export-status`. If this header value is included by a client and is supported by a server, the server indicates this with a `Preference-Applied` header, as described under Response - Success below.
 
   When a Prefer header value of `separate-export-status` is provided in the kick-off request and supported by the server, the HTTP status code in the response to a Bulk Data Status Request SHALL reflect the status request itself, and not the asynchronous job. In this case, when the HTTP status code of the Bulk Data Status Request is `200 OK`, the response SHALL also include an `X-Export-Status` header with an HTTP status code that reflects the status of the asynchronous job.
 
@@ -95,8 +97,6 @@ Example NDJSON file when the manifest does not include `outputOrganizedBy`:
 {"id":"p-3","resourceType":"Patient", "name":[{"given":["Sandy"],"family":"Hamlin"}],"gender":"female", ...}
 {...}
 ```
-
-<a name="submit-status-organize-output-by-file-example"></a>
 
 Example NDJSON file when `outputOrganizedBy` is set to `Patient`:
 
